@@ -1,358 +1,395 @@
-import { useState } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Missouri Initiative Petition & Referendum Process</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; background: #f4f1ec; min-height: 100vh; }
 
-const PHASES = [
-  {
-    id: "draft",
-    label: "1. Draft & Submit",
-    color: "#1a365d",
-    accent: "#4299e1",
-    steps: [
-      {
-        title: "Petitioner Drafts Petition",
-        detail: "The petitioner writes the proposed measure in full — either a statutory change or a constitutional amendment. The full text must be included on every petition page.",
-      },
-      {
-        title: "Submit Sample Sheet to SOS",
-        detail: 'The petitioner submits the proposed petition (a "sample sheet") plus a cover page to the Secretary of State\'s office. If outside funding was involved in drafting, a committee organization statement must be attached.',
-      },
-      {
-        title: "SOS Posts for Public Comment",
-        detail: "Within 2 business days of receipt, the SOS posts the petition text publicly on the SOS website. A 15-day public comment period begins.",
-      },
-      {
-        title: "Sent to AG & State Auditor",
-        detail: "The SOS simultaneously sends the petition to (a) the Attorney General for form review (within 10 days) and (b) the State Auditor for a fiscal note and fiscal note summary (within 20 days).",
-      },
-      {
-        title: "SOS Approves or Rejects Form",
-        detail: "Within 15 days of submission, the SOS makes a final decision on the petition's form, taking AG comments into account. The petitioner is notified in writing. ⚠️ Rejection ends the process; petitioner must revise and re-submit.",
-      },
-    ],
-  },
-  {
-    id: "ballot-title",
-    label: "2. Ballot Title Certification",
-    color: "#22543d",
-    accent: "#48bb78",
-    steps: [
-      {
-        title: "SOS Drafts Ballot Summary",
-        detail: "Within 23 days of form approval, the SOS prepares a proposed ballot summary statement — a true and impartial question-form description of the measure (max 100 words for initiative petitions).",
-      },
-      {
-        title: "AG Reviews Summary & Fiscal Note",
-        detail: "The AG has 10 days to approve the ballot summary's legal content and form. The AG also reviews and approves (or rejects) the State Auditor's fiscal note summary.",
-      },
-      {
-        title: "SOS Certifies Official Ballot Title",
-        detail: "Within 3 days of receiving the approved summary and fiscal note, the SOS certifies the Official Ballot Title — the combination of ballot summary + fiscal note summary. This is posted publicly and sent to the petitioner.",
-      },
-      {
-        title: "10-Day Challenge Window",
-        detail: "Any citizen may challenge the official ballot title in Cole County Circuit Court within 10 days of certification. The court can order a revised title. Decisions can be appealed to the Missouri Supreme Court within 10 days.",
-      },
-    ],
-  },
-  {
-    id: "approved",
-    label: "✓ APPROVED FOR CIRCULATION",
-    color: "#44337a",
-    accent: "#b794f4",
-    milestone: true,
-    steps: [
-      {
-        title: "What 'Approved for Circulation' Means",
-        detail: "Once the Official Ballot Title is certified, the petition is officially 'approved for circulation.' The SOS posts the approved petition on its website. This status means the petition may now be circulated and signatures may legally be collected. Signatures collected before this date do NOT count.",
-      },
-    ],
-  },
-  {
-    id: "signatures",
-    label: "3. Signature Collection",
-    color: "#7b341e",
-    accent: "#f6ad55",
-    steps: [
-      {
-        title: "Circulators Register with SOS",
-        detail: "All circulators must be 18+ and register with the SOS. Delivering a signed circulator affidavit to the SOS counts as registration. Circulators convicted of forgery are disqualified.",
-      },
-      {
-        title: "Collect Signatures",
-        detail: "Any registered Missouri voter may sign. Each petition page must contain only signatures from one county, with the Official Ballot Title and full measure text affixed. Circulators must notarize their affidavit on each page.",
-      },
-      {
-        title: "Collection Window",
-        detail: "Signatures can only be collected after the Official Ballot Title is certified and not earlier than the day after the previous general election. For the 2026 cycle, the window runs from Nov 6, 2024 through May 3, 2026.",
-      },
-      {
-        title: "Signature Thresholds",
-        detail: "Statutory change: 5% of gubernatorial votes in any 6 of 8 congressional districts (minimum ~106,384 sigs for 2026). Constitutional amendment: 8% in any 6 of 8 districts (minimum ~170,215 sigs for 2026). Petitioners can target the 6 districts with the lowest vote totals.",
-      },
-    ],
-  },
-  {
-    id: "submission",
-    label: "4. Submission & Verification",
-    color: "#5f370e",
-    accent: "#f6e05e",
-    steps: [
-      {
-        title: "Submit All Signatures at Once",
-        detail: "Deadline: 5:00 PM on May 3, 2026 (6 months before the election). ALL pages must be submitted simultaneously, organized sequentially by county in labeled file folders and boxes. A receipt form showing pages per county is required.",
-      },
-      {
-        title: "SOS Inventories & Distributes Pages",
-        detail: "The SOS verifies the page count and issues a receipt. Pages are then distributed to local election authorities (county clerks / boards of election commissioners) for signature verification.",
-      },
-      {
-        title: "Local Authorities Verify Signatures",
-        detail: "Election authorities check signatures against voter registration records. The SOS may use random sampling (5% sample) or full verification. Under random sampling: <90% valid = district fails; >110% valid = district qualifies; 90–110% = full verification required.",
-      },
-      {
-        title: "Verification Deadline",
-        detail: "Full verification must be certified and delivered to the SOS by 5:00 PM on the last Tuesday in July. For 2026: July 28, 2026.",
-      },
-    ],
-  },
-  {
-    id: "sufficiency",
-    label: "✓ CERTIFICATE OF SUFFICIENCY",
-    color: "#1a365d",
-    accent: "#63b3ed",
-    milestone: true,
-    steps: [
-      {
-        title: "SOS Issues Certificate",
-        detail: "After tallying verified signatures, the SOS issues either: (a) a Certificate of Sufficiency — stating the petition has enough valid signatures and shall be placed on the ballot — or (b) a Certificate of Insufficiency, stating the reasons. Must be issued by 5:00 PM on the 13th Tuesday before the general election (August 4, 2026).",
-      },
-      {
-        title: "What This Means: Officially On the Ballot",
-        detail: "This is the moment a measure is officially 'on the ballot.' Citizens have 10 days to challenge the sufficiency determination in Cole County Circuit Court.",
-      },
-      {
-        title: "Legislative Research Committee Hearing",
-        detail: "Within 30 days of the Certificate of Sufficiency, the Joint Committee on Legislative Research must hold a public hearing in Jefferson City. A summary is posted on the SOS website.",
-      },
-    ],
-  },
-  {
-    id: "ballot",
-    label: "5. Ballot & Election",
-    color: "#276749",
-    accent: "#9ae6b4",
-    steps: [
-      {
-        title: "Measure Numbered or Lettered",
-        detail: "Constitutional amendments are numbered sequentially (Amendment No. 1, etc.) in order received. Statutory measures are lettered alphabetically (Proposition A, B, etc.).",
-      },
-      {
-        title: "Publication of Measures",
-        detail: "The SOS publishes the full text of each measure in newspapers statewide — once/week for 2 consecutive weeks, with the last publication 15–30 days before the election. Copies are also posted at polling places.",
-      },
-      {
-        title: "Election Day",
-        detail: "Statewide ballot measures are voted on at the general election (first Tuesday after the first Monday in November in even-numbered years). A simple majority (50%+1) of votes cast on that measure is required to pass.",
-      },
-      {
-        title: "If Approved",
-        detail: "A statutory measure takes effect when approved by majority vote. A constitutional amendment takes effect 30 days after the election. If two conflicting measures both pass, the one with the most total affirmative votes prevails.",
-      },
-    ],
-  },
-];
+  .header { background: #1a2744; color: white; padding: 2rem 2rem 1.5rem; }
+  .header-inner { max-width: 860px; margin: 0 auto; }
+  .header-eyebrow { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: #90cdf4; margin-bottom: 0.5rem; font-family: monospace; }
+  .header h1 { font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
+  .header p { margin-top: 0.6rem; color: #bee3f8; font-size: 0.9rem; max-width: 580px; }
 
-const REFERENDUM_NOTES = [
-  { label: "Purpose", text: "Allows citizens to refer a law already passed by the General Assembly back to voters for approval or rejection." },
-  { label: "Filing Deadline", text: "Referendum petition must be filed with the SOS within 90 days of the final adjournment of the GA session that passed the law." },
-  { label: "Signature Threshold", text: "Same as statutory initiative: 5% of legal voters in any 6 of 8 congressional districts." },
-  { label: "Exemptions", text: "Laws necessary for immediate public peace, health, or safety — and current appropriations bills — cannot be referred by petition." },
-  { label: "GA Referral", text: "The General Assembly itself can also refer legislation to voters without any petition." },
-  { label: "Governor's Veto", text: "The governor's veto power does not apply to measures referred to the people." },
-];
+  .tabs { background: #162035; border-bottom: 1px solid #2d3748; overflow-x: auto; }
+  .tabs-inner { max-width: 860px; margin: 0 auto; display: flex; }
+  .tab-btn { background: none; border: none; border-bottom: 2.5px solid transparent; color: #718096; padding: 0.65rem 1.1rem; cursor: pointer; font-size: 0.78rem; font-family: monospace; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; transition: color 0.15s; }
+  .tab-btn.active { color: #90cdf4; border-bottom-color: #63b3ed; }
 
-const KEY_STATUSES = [
-  { term: "Filed", color: "#4299e1", def: "The sample petition sheet has been submitted to the SOS. The petition is posted publicly but cannot yet collect signatures. The SOS, AG, and State Auditor are actively reviewing it." },
-  { term: "Approved for Circulation", color: "#9f7aea", def: "The Official Ballot Title has been certified. The petition can now be actively circulated and signatures legally collected. This is the first major green light — but the measure is NOT yet on the ballot." },
-  { term: "Submitted", color: "#f6ad55", def: "The petitioner has delivered all signed petition pages to the SOS by the deadline. Signature verification by local election authorities begins." },
-  { term: "Certificate of Sufficiency", color: "#48bb78", def: "The SOS has verified that sufficient valid signatures exist. The measure is officially certified for the November ballot. This is the definitive 'on the ballot' status." },
-];
+  .content { max-width: 860px; margin: 0 auto; padding: 1.75rem 1.5rem 4rem; }
 
-export default function MissouriPetitionGuide() {
-  const [activePhase, setActivePhase] = useState(null);
-  const [activeStep, setActiveStep] = useState(null);
-  const [tab, setTab] = useState("flow");
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 
-  const handlePhaseClick = (phaseId) => {
-    if (activePhase === phaseId) { setActivePhase(null); setActiveStep(null); }
-    else { setActivePhase(phaseId); setActiveStep(null); }
-  };
+  /* Type cards */
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
+  .type-card { background: white; border: 1px solid #ddd; border-radius: 7px; padding: 0.9rem 1.1rem; }
+  .type-tag { font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: #718096; font-family: monospace; margin-bottom: 0.2rem; }
+  .type-name { font-weight: 700; font-size: 0.98rem; margin-bottom: 0.3rem; }
+  .type-desc { font-size: 0.84rem; color: #4a5568; line-height: 1.5; }
 
-  return (
-    <div style={{ fontFamily: "'Georgia', serif", background: "#f4f1ec", minHeight: "100vh" }}>
-      <div style={{ background: "#1a2744", color: "white", padding: "2rem 2rem 1.5rem" }}>
-        <div style={{ maxWidth: 860, margin: "0 auto" }}>
-          <div style={{ fontSize: "0.68rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#90cdf4", marginBottom: "0.5rem", fontFamily: "monospace" }}>
-            Missouri Secretary of State · Elections Division
-          </div>
-          <h1 style={{ margin: 0, fontSize: "1.75rem", fontWeight: 700, lineHeight: 1.2 }}>
-            Initiative Petition & Referendum Process
-          </h1>
-          <p style={{ margin: "0.6rem 0 0", color: "#bee3f8", fontSize: "0.9rem", maxWidth: 580 }}>
-            A research synthesis of Missouri's ballot measure process — from idea to election. Click any stage for details.
-          </p>
-        </div>
+  /* Flow */
+  .flow-hint { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: #718096; font-family: monospace; margin-bottom: 0.6rem; }
+  .phase-row { display: flex; align-items: stretch; }
+  .spine { display: flex; flex-direction: column; align-items: center; width: 28px; flex-shrink: 0; }
+  .spine-line { width: 2px; flex: 1; background: #cbd5e0; }
+  .spine-line.hidden { background: transparent; }
+  .spine-dot { width: 12px; height: 12px; border-radius: 50%; background: white; border: 2.5px solid #1a365d; flex-shrink: 0; transition: all 0.2s; }
+  .spine-dot.milestone { width: 18px; height: 18px; background: #44337a; border-color: #44337a; }
+  .spine-dot.active-dot { background: #b794f4 !important; border-color: #b794f4 !important; }
+
+  .phase-card { flex: 1; margin: 2px 0; padding: 0.6rem 1rem; background: white; border: 1.5px solid #ddd; border-radius: 6px; cursor: pointer; transition: all 0.18s; color: #2d3748; }
+  .phase-card.milestone-card { background: #ede9f6; border-color: #b794f4; padding: 0.75rem 1rem; }
+  .phase-card.active-card { color: white; }
+  .phase-header { display: flex; align-items: center; justify-content: space-between; }
+  .phase-label { font-weight: 600; font-size: 0.88rem; }
+  .phase-label.milestone-label { font-weight: 800; font-size: 0.95rem; }
+  .phase-toggle { font-size: 0.72rem; opacity: 0.6; font-family: monospace; }
+
+  .steps-list { margin-top: 0.65rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  .step-item { background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.22); border-radius: 5px; padding: 0.5rem 0.75rem; cursor: pointer; }
+  .step-header { font-weight: 600; font-size: 0.82rem; display: flex; justify-content: space-between; gap: 1rem; }
+  .step-toggle { opacity: 0.65; flex-shrink: 0; }
+  .step-detail { margin-top: 0.4rem; font-size: 0.81rem; line-height: 1.6; opacity: 0.93; display: none; }
+  .step-detail.open { display: block; }
+
+  /* Statuses */
+  .status-intro { margin-bottom: 1rem; font-size: 0.9rem; color: #4a5568; line-height: 1.6; }
+  .status-cards { display: flex; flex-direction: column; gap: 1rem; }
+  .status-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 1.1rem 1.25rem; border-left-width: 4px; border-left-style: solid; }
+  .status-term { font-weight: 700; font-size: 1rem; margin-bottom: 0.4rem; }
+  .status-def { font-size: 0.87rem; color: #4a5568; line-height: 1.6; }
+  .warning-box { background: #ebf8ff; border: 1px solid #bee3f8; border-radius: 8px; padding: 1rem 1.25rem; margin-top: 1rem; }
+  .warning-title { font-weight: 700; font-size: 0.85rem; color: #2b6cb0; margin-bottom: 0.3rem; }
+  .warning-text { font-size: 0.85rem; color: #2c5282; line-height: 1.6; }
+
+  /* Referendum */
+  .ref-intro { margin-bottom: 1rem; font-size: 0.9rem; color: #4a5568; line-height: 1.6; }
+  .ref-rows { display: flex; flex-direction: column; gap: 0.75rem; }
+  .ref-row { background: white; border: 1px solid #ddd; border-radius: 7px; padding: 0.9rem 1.1rem; display: flex; gap: 1rem; }
+  .ref-label { font-family: monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #c05621; font-weight: 700; flex-shrink: 0; padding-top: 0.15rem; min-width: 110px; }
+  .ref-text { font-size: 0.87rem; color: #4a5568; line-height: 1.6; }
+  .ref-note { margin-top: 1.25rem; background: #fffaf0; border: 1px solid #f6ad55; border-radius: 7px; padding: 1rem 1.1rem; }
+  .ref-note-title { font-weight: 700; font-size: 0.85rem; color: #c05621; margin-bottom: 0.35rem; }
+  .ref-note-text { font-size: 0.85rem; color: #744210; line-height: 1.6; }
+
+  /* Dates */
+  .dates-intro { margin-bottom: 1.25rem; font-size: 0.9rem; color: #4a5568; line-height: 1.6; }
+  .dates-list { display: flex; flex-direction: column; gap: 0.6rem; }
+  .date-row { display: flex; gap: 1rem; align-items: flex-start; background: white; border: 1px solid #ddd; border-radius: 7px; padding: 0.85rem 1.1rem; color: #2d3748; }
+  .date-row.critical { background: #1a2744; border-color: #2d3f6a; color: white; }
+  .date-val { font-family: monospace; font-size: 0.78rem; font-weight: 700; color: #4299e1; flex-shrink: 0; min-width: 155px; }
+  .date-row.critical .date-val { color: #f6ad55; }
+  .date-event { font-size: 0.87rem; line-height: 1.5; }
+  .date-key { margin-left: auto; flex-shrink: 0; font-size: 0.62rem; background: #c05621; color: white; padding: 0.1rem 0.45rem; border-radius: 3px; font-family: monospace; align-self: center; }
+  .sig-box { margin-top: 1.25rem; background: #f0fff4; border: 1px solid #9ae6b4; border-radius: 7px; padding: 0.9rem 1.1rem; }
+  .sig-title { font-weight: 700; font-size: 0.85rem; color: #276749; margin-bottom: 0.3rem; }
+  .sig-text { font-size: 0.85rem; color: #276749; line-height: 1.8; }
+  .source-note { margin-top: 0.75rem; font-size: 0.7rem; color: #a0aec0; font-family: monospace; }
+
+  @media (max-width: 520px) {
+    .type-grid { grid-template-columns: 1fr; }
+    .ref-row { flex-direction: column; gap: 0.3rem; }
+    .date-row { flex-direction: column; gap: 0.3rem; }
+    .date-val { min-width: unset; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-eyebrow">Missouri Secretary of State · Elections Division</div>
+    <h1>Initiative Petition & Referendum Process</h1>
+    <p>A research synthesis of Missouri's ballot measure process — from idea to election. Click any stage for details.</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tabs-inner">
+    <button class="tab-btn active" onclick="switchTab('flow', this)">Process Flow</button>
+    <button class="tab-btn" onclick="switchTab('statuses', this)">Key Statuses</button>
+    <button class="tab-btn" onclick="switchTab('referendum', this)">Referendum Differences</button>
+    <button class="tab-btn" onclick="switchTab('dates', this)">2026 Deadlines</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- FLOW TAB -->
+  <div id="tab-flow" class="tab-panel active">
+    <div class="type-grid">
+      <div class="type-card">
+        <div class="type-tag">Citizen-initiated</div>
+        <div class="type-name">Initiative Petition</div>
+        <div class="type-desc">Citizens propose a new law or constitutional amendment, independent of the legislature.</div>
       </div>
-
-      <div style={{ background: "#162035", borderBottom: "1px solid #2d3748" }}>
-        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", gap: 0, overflowX: "auto" }}>
-          {[["flow", "Process Flow"], ["statuses", "Key Statuses"], ["referendum", "Referendum Differences"], ["dates", "2026 Deadlines"]].map(([id, label]) => (
-            <button key={id} onClick={() => setTab(id)} style={{ background: "none", border: "none", borderBottom: tab === id ? "2.5px solid #63b3ed" : "2.5px solid transparent", color: tab === id ? "#90cdf4" : "#718096", padding: "0.65rem 1.1rem", cursor: "pointer", fontSize: "0.8rem", fontFamily: "monospace", letterSpacing: "0.05em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "1.75rem 1.5rem 4rem" }}>
-
-        {tab === "flow" && (
-          <div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "1.5rem" }}>
-              {[
-                { type: "Initiative Petition", desc: "Citizens propose a new law or constitutional amendment, independent of the legislature.", tag: "Citizen-initiated" },
-                { type: "Referendum Petition", desc: "Citizens refer a GA-passed law back to voters for approval or rejection.", tag: "Legislature-reactive" },
-              ].map((t) => (
-                <div key={t.type} style={{ background: "white", border: "1px solid #ddd", borderRadius: 7, padding: "0.9rem 1.1rem" }}>
-                  <div style={{ fontSize: "0.62rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "#718096", fontFamily: "monospace", marginBottom: "0.2rem" }}>{t.tag}</div>
-                  <div style={{ fontWeight: 700, fontSize: "0.98rem", marginBottom: "0.3rem" }}>{t.type}</div>
-                  <div style={{ fontSize: "0.84rem", color: "#4a5568", lineHeight: 1.5 }}>{t.desc}</div>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ fontSize: "0.65rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "#718096", fontFamily: "monospace", marginBottom: "0.6rem" }}>
-              Click a stage to expand steps
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-              {PHASES.map((phase, i) => {
-                const isActive = activePhase === phase.id;
-                const isMilestone = phase.milestone;
-                return (
-                  <div key={phase.id} style={{ display: "flex", alignItems: "stretch" }}>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 28, flexShrink: 0 }}>
-                      <div style={{ width: 2, flex: "1", background: i === 0 ? "transparent" : "#cbd5e0" }} />
-                      <div style={{ width: isMilestone ? 18 : 12, height: isMilestone ? 18 : 12, borderRadius: "50%", background: isActive ? phase.accent : (isMilestone ? phase.color : "white"), border: `2.5px solid ${isActive ? phase.accent : phase.color}`, flexShrink: 0, zIndex: 1, transition: "all 0.2s" }} />
-                      <div style={{ width: 2, flex: "1", background: i === PHASES.length - 1 ? "transparent" : "#cbd5e0" }} />
-                    </div>
-                    <div onClick={() => handlePhaseClick(phase.id)} style={{ flex: 1, margin: "2px 0", padding: isMilestone ? "0.75rem 1rem" : "0.6rem 1rem", background: isActive ? phase.color : (isMilestone ? "#ede9f6" : "white"), border: `1.5px solid ${isActive ? phase.color : (isMilestone ? "#b794f4" : "#ddd")}`, borderRadius: 6, cursor: "pointer", transition: "all 0.18s", color: isActive ? "white" : "#2d3748" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span style={{ fontWeight: isMilestone ? 800 : 600, fontSize: isMilestone ? "0.95rem" : "0.88rem" }}>{phase.label}</span>
-                        <span style={{ fontSize: "0.72rem", opacity: 0.6, fontFamily: "monospace" }}>{isActive ? "▲ collapse" : `▼ ${phase.steps.length} step${phase.steps.length > 1 ? "s" : ""}`}</span>
-                      </div>
-                      {isActive && (
-                        <div style={{ marginTop: "0.65rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                          {phase.steps.map((step, si) => {
-                            const key = `${phase.id}-${si}`;
-                            const open = activeStep === key;
-                            return (
-                              <div key={si} onClick={(e) => { e.stopPropagation(); setActiveStep(open ? null : key); }} style={{ background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 5, padding: "0.5rem 0.75rem", cursor: "pointer" }}>
-                                <div style={{ fontWeight: 600, fontSize: "0.82rem", display: "flex", justifyContent: "space-between", gap: "1rem" }}>
-                                  <span>{step.title}</span>
-                                  <span style={{ opacity: 0.65, flexShrink: 0 }}>{open ? "−" : "+"}</span>
-                                </div>
-                                {open && <div style={{ marginTop: "0.4rem", fontSize: "0.81rem", lineHeight: 1.6, opacity: 0.93 }}>{step.detail}</div>}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {tab === "statuses" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", color: "#4a5568", lineHeight: 1.6 }}>
-              These four statuses are the most important distinctions to understand when tracking a petition through the SOS website.
-            </p>
-            {KEY_STATUSES.map((s) => (
-              <div key={s.term} style={{ background: "white", border: "1px solid #ddd", borderRadius: 8, padding: "1.1rem 1.25rem", borderLeft: `4px solid ${s.color}` }}>
-                <div style={{ fontWeight: 700, fontSize: "1rem", marginBottom: "0.4rem" }}>{s.term}</div>
-                <div style={{ fontSize: "0.87rem", color: "#4a5568", lineHeight: 1.6 }}>{s.def}</div>
-              </div>
-            ))}
-            <div style={{ background: "#ebf8ff", border: "1px solid #bee3f8", borderRadius: 8, padding: "1rem 1.25rem" }}>
-              <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#2b6cb0", marginBottom: "0.3rem" }}>⚠️ Common Confusion</div>
-              <div style={{ fontSize: "0.85rem", color: "#2c5282", lineHeight: 1.6 }}>
-                "Approved for Circulation" does <em>not</em> mean the measure is on the ballot. It means signature collection can begin. A petition approved for circulation may never gather enough signatures to qualify. The measure is only definitively on the ballot once a Certificate of Sufficiency is issued.
-              </div>
-            </div>
-          </div>
-        )}
-
-        {tab === "referendum" && (
-          <div>
-            <p style={{ margin: "0 0 1rem", fontSize: "0.9rem", color: "#4a5568", lineHeight: 1.6 }}>
-              Referendum petitions follow most of the same process as initiative petitions, but with these key differences:
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              {REFERENDUM_NOTES.map((n) => (
-                <div key={n.label} style={{ background: "white", border: "1px solid #ddd", borderRadius: 7, padding: "0.9rem 1.1rem", display: "flex", gap: "1rem" }}>
-                  <div style={{ fontFamily: "monospace", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#c05621", fontWeight: 700, flexShrink: 0, paddingTop: "0.15rem", minWidth: 110 }}>{n.label}</div>
-                  <div style={{ fontSize: "0.87rem", color: "#4a5568", lineHeight: 1.6 }}>{n.text}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: "1.25rem", background: "#fffaf0", border: "1px solid #f6ad55", borderRadius: 7, padding: "1rem 1.1rem" }}>
-              <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#c05621", marginBottom: "0.35rem" }}>Note on Shared Process</div>
-              <div style={{ fontSize: "0.85rem", color: "#744210", lineHeight: 1.6 }}>
-                Once a referendum petition clears the filing and form-approval steps, the signature collection, submission, verification, and Certificate of Sufficiency steps work identically to the initiative petition process.
-              </div>
-            </div>
-          </div>
-        )}
-
-        {tab === "dates" && (
-          <div>
-            <p style={{ margin: "0 0 1.25rem", fontSize: "0.9rem", color: "#4a5568", lineHeight: 1.6 }}>
-              Critical statutory deadlines for the 2026 election cycle.
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-              {[
-                { date: "Nov 6, 2024", event: "Earliest date signatures may be collected (day after 2024 general election)" },
-                { date: "May 3, 2026  ·  5:00 PM", event: "Deadline to submit all signed petition pages to SOS", critical: true },
-                { date: "May 17, 2026 (est.)", event: "Deadline for SOS to distribute pages to local election authorities (2 weeks after submission, single petition)" },
-                { date: "July 28, 2026  ·  5:00 PM", event: "Deadline for local election authorities to certify and deliver full signature verification to SOS", critical: true },
-                { date: "Aug 4, 2026  ·  5:00 PM", event: "Deadline for SOS to issue Certificate of Sufficiency or Insufficiency (13th Tuesday before election)", critical: true },
-                { date: "Nov 3, 2026", event: "General Election — voters decide on certified ballot measures" },
-              ].map((d) => (
-                <div key={d.date} style={{ display: "flex", gap: "1rem", alignItems: "flex-start", background: d.critical ? "#1a2744" : "white", color: d.critical ? "white" : "#2d3748", border: `1px solid ${d.critical ? "#2d3f6a" : "#ddd"}`, borderRadius: 7, padding: "0.85rem 1.1rem" }}>
-                  <div style={{ fontFamily: "monospace", fontSize: "0.78rem", fontWeight: 700, color: d.critical ? "#f6ad55" : "#4299e1", flexShrink: 0, minWidth: 150 }}>{d.date}</div>
-                  <div style={{ fontSize: "0.87rem", lineHeight: 1.5 }}>{d.event}</div>
-                  {d.critical && <div style={{ marginLeft: "auto", flexShrink: 0, fontSize: "0.62rem", background: "#c05621", color: "white", padding: "0.1rem 0.45rem", borderRadius: 3, fontFamily: "monospace", alignSelf: "center" }}>KEY</div>}
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: "1.25rem", background: "#f0fff4", border: "1px solid #9ae6b4", borderRadius: 7, padding: "0.9rem 1.1rem" }}>
-              <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#276749", marginBottom: "0.3rem" }}>Signature Thresholds — 2026</div>
-              <div style={{ fontSize: "0.85rem", color: "#276749", lineHeight: 1.8 }}>
-                <strong>Statutory change:</strong> ~106,384 minimum (5% in the 6 least-voted districts)<br />
-                <strong>Constitutional amendment:</strong> ~170,215 minimum (8% in the 6 least-voted districts)<br />
-                <span style={{ fontSize: "0.78rem", opacity: 0.8 }}>Based on 2024 gubernatorial vote totals per congressional district.</span>
-              </div>
-            </div>
-            <div style={{ marginTop: "0.75rem", fontSize: "0.7rem", color: "#a0aec0", fontFamily: "monospace" }}>
-              Source: Mo. SOS "Make Your Voice Heard" (Feb. 2025) · RSMo Ch. 116 · Mo. Const. Art. III §§49–53
-            </div>
-          </div>
-        )}
-
+      <div class="type-card">
+        <div class="type-tag">Legislature-reactive</div>
+        <div class="type-name">Referendum Petition</div>
+        <div class="type-desc">Citizens refer a GA-passed law back to voters for approval or rejection.</div>
       </div>
     </div>
-  );
+
+    <div class="flow-hint">Click a stage to expand steps</div>
+
+    <div id="flow-container"></div>
+  </div>
+
+  <!-- STATUSES TAB -->
+  <div id="tab-statuses" class="tab-panel">
+    <p class="status-intro">These four statuses are the most important distinctions to understand when tracking a petition through the SOS website.</p>
+    <div class="status-cards">
+      <div class="status-card" style="border-left-color:#4299e1">
+        <div class="status-term">Filed</div>
+        <div class="status-def">The sample petition sheet has been submitted to the SOS. The petition is posted publicly but cannot yet collect signatures. The SOS, AG, and State Auditor are actively reviewing it.</div>
+      </div>
+      <div class="status-card" style="border-left-color:#9f7aea">
+        <div class="status-term">Approved for Circulation</div>
+        <div class="status-def">The Official Ballot Title has been certified. The petition can now be actively circulated and signatures legally collected. This is the first major green light — but the measure is NOT yet on the ballot.</div>
+      </div>
+      <div class="status-card" style="border-left-color:#f6ad55">
+        <div class="status-term">Submitted</div>
+        <div class="status-def">The petitioner has delivered all signed petition pages to the SOS by the deadline. Signature verification by local election authorities begins.</div>
+      </div>
+      <div class="status-card" style="border-left-color:#48bb78">
+        <div class="status-term">Certificate of Sufficiency</div>
+        <div class="status-def">The SOS has verified that sufficient valid signatures exist. The measure is officially certified for the November ballot. This is the definitive "on the ballot" status.</div>
+      </div>
+    </div>
+    <div class="warning-box">
+      <div class="warning-title">⚠️ Common Confusion</div>
+      <div class="warning-text">"Approved for Circulation" does <em>not</em> mean the measure is on the ballot. It means signature collection can begin. A petition approved for circulation may never gather enough signatures to qualify. The measure is only definitively on the ballot once a Certificate of Sufficiency is issued.</div>
+    </div>
+  </div>
+
+  <!-- REFERENDUM TAB -->
+  <div id="tab-referendum" class="tab-panel">
+    <p class="ref-intro">Referendum petitions follow most of the same process as initiative petitions, but with these key differences:</p>
+    <div class="ref-rows">
+      <div class="ref-row"><div class="ref-label">Purpose</div><div class="ref-text">Allows citizens to refer a law already passed by the General Assembly back to voters for approval or rejection.</div></div>
+      <div class="ref-row"><div class="ref-label">Filing Deadline</div><div class="ref-text">Referendum petition must be filed with the SOS within 90 days of the final adjournment of the GA session that passed the law.</div></div>
+      <div class="ref-row"><div class="ref-label">Sig. Threshold</div><div class="ref-text">Same as statutory initiative: 5% of legal voters in any 6 of 8 congressional districts.</div></div>
+      <div class="ref-row"><div class="ref-label">Exemptions</div><div class="ref-text">Laws necessary for immediate public peace, health, or safety — and current appropriations bills — cannot be referred by petition.</div></div>
+      <div class="ref-row"><div class="ref-label">GA Referral</div><div class="ref-text">The General Assembly itself can also refer legislation to voters without any petition.</div></div>
+      <div class="ref-row"><div class="ref-label">Governor's Veto</div><div class="ref-text">The governor's veto power does not apply to measures referred to the people.</div></div>
+    </div>
+    <div class="ref-note">
+      <div class="ref-note-title">Note on Shared Process</div>
+      <div class="ref-note-text">Once a referendum petition clears the filing and form-approval steps, the signature collection, submission, verification, and Certificate of Sufficiency steps work identically to the initiative petition process.</div>
+    </div>
+  </div>
+
+  <!-- DATES TAB -->
+  <div id="tab-dates" class="tab-panel">
+    <p class="dates-intro">Critical statutory deadlines for the 2026 election cycle.</p>
+    <div class="dates-list">
+      <div class="date-row">
+        <div class="date-val">Nov 6, 2024</div>
+        <div class="date-event">Earliest date signatures may be collected (day after 2024 general election)</div>
+      </div>
+      <div class="date-row critical">
+        <div class="date-val">May 3, 2026 · 5:00 PM</div>
+        <div class="date-event">Deadline to submit all signed petition pages to SOS</div>
+        <div class="date-key">KEY</div>
+      </div>
+      <div class="date-row">
+        <div class="date-val">May 17, 2026 (est.)</div>
+        <div class="date-event">Deadline for SOS to distribute pages to local election authorities (2 weeks after submission for a single petition)</div>
+      </div>
+      <div class="date-row critical">
+        <div class="date-val">Jul 28, 2026 · 5:00 PM</div>
+        <div class="date-event">Deadline for local election authorities to certify and deliver full signature verification to SOS</div>
+        <div class="date-key">KEY</div>
+      </div>
+      <div class="date-row critical">
+        <div class="date-val">Aug 4, 2026 · 5:00 PM</div>
+        <div class="date-event">Deadline for SOS to issue Certificate of Sufficiency or Insufficiency (13th Tuesday before election)</div>
+        <div class="date-key">KEY</div>
+      </div>
+      <div class="date-row">
+        <div class="date-val">Nov 3, 2026</div>
+        <div class="date-event">General Election — voters decide on certified ballot measures</div>
+      </div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-title">Signature Thresholds — 2026</div>
+      <div class="sig-text">
+        <strong>Statutory change:</strong> ~106,384 minimum (5% in the 6 least-voted districts)<br>
+        <strong>Constitutional amendment:</strong> ~170,215 minimum (8% in the 6 least-voted districts)<br>
+        <span style="font-size:0.78rem;opacity:0.8">Based on 2024 gubernatorial vote totals per congressional district.</span>
+      </div>
+    </div>
+    <div class="source-note">Source: Mo. SOS "Make Your Voice Heard" (Feb. 2025) · RSMo Ch. 116 · Mo. Const. Art. III §§49–53</div>
+  </div>
+
+</div>
+
+<script>
+const PHASES = [
+  {
+    id: "draft", label: "1. Draft & Submit",
+    color: "#1a365d", accent: "#4299e1",
+    steps: [
+      { title: "Petitioner Drafts Petition", detail: "The petitioner writes the proposed measure in full — either a statutory change or a constitutional amendment. The full text must be included on every petition page." },
+      { title: "Submit Sample Sheet to SOS", detail: 'The petitioner submits the proposed petition (a "sample sheet") plus a cover page to the Secretary of State\'s office. If outside funding was involved in drafting, a committee organization statement must be attached.' },
+      { title: "SOS Posts for Public Comment", detail: "Within 2 business days of receipt, the SOS posts the petition text publicly on the SOS website. A 15-day public comment period begins." },
+      { title: "Sent to AG & State Auditor", detail: "The SOS simultaneously sends the petition to (a) the Attorney General for form review (within 10 days) and (b) the State Auditor for a fiscal note and fiscal note summary (within 20 days)." },
+      { title: "SOS Approves or Rejects Form", detail: "Within 15 days of submission, the SOS makes a final decision on the petition's form, taking AG comments into account. The petitioner is notified in writing. ⚠️ Rejection ends the process; petitioner must revise and re-submit." },
+    ]
+  },
+  {
+    id: "ballot-title", label: "2. Ballot Title Certification",
+    color: "#22543d", accent: "#48bb78",
+    steps: [
+      { title: "SOS Drafts Ballot Summary", detail: "Within 23 days of form approval, the SOS prepares a proposed ballot summary statement — a true and impartial question-form description of the measure (max 100 words for initiative petitions)." },
+      { title: "AG Reviews Summary & Fiscal Note", detail: "The AG has 10 days to approve the ballot summary's legal content and form. The AG also reviews and approves (or rejects) the State Auditor's fiscal note summary." },
+      { title: "SOS Certifies Official Ballot Title", detail: "Within 3 days of receiving the approved summary and fiscal note, the SOS certifies the Official Ballot Title — the combination of ballot summary + fiscal note summary. This is posted publicly and sent to the petitioner." },
+      { title: "10-Day Challenge Window", detail: "Any citizen may challenge the official ballot title in Cole County Circuit Court within 10 days of certification. The court can order a revised title. Decisions can be appealed to the Missouri Supreme Court within 10 days." },
+    ]
+  },
+  {
+    id: "approved", label: "✓ APPROVED FOR CIRCULATION",
+    color: "#44337a", accent: "#b794f4", milestone: true,
+    steps: [
+      { title: "What 'Approved for Circulation' Means", detail: "Once the Official Ballot Title is certified, the petition is officially 'approved for circulation.' The SOS posts the approved petition on its website. This status means the petition may now be circulated and signatures may legally be collected. Signatures collected before this date do NOT count." },
+    ]
+  },
+  {
+    id: "signatures", label: "3. Signature Collection",
+    color: "#7b341e", accent: "#f6ad55",
+    steps: [
+      { title: "Circulators Register with SOS", detail: "All circulators must be 18+ and register with the SOS. Delivering a signed circulator affidavit to the SOS counts as registration. Circulators convicted of forgery are disqualified." },
+      { title: "Collect Signatures", detail: "Any registered Missouri voter may sign. Each petition page must contain only signatures from one county, with the Official Ballot Title and full measure text affixed. Circulators must notarize their affidavit on each page." },
+      { title: "Collection Window", detail: "Signatures can only be collected after the Official Ballot Title is certified and not earlier than the day after the previous general election. For the 2026 cycle, the window runs from Nov 6, 2024 through May 3, 2026." },
+      { title: "Signature Thresholds", detail: "Statutory change: 5% of gubernatorial votes in any 6 of 8 congressional districts (minimum ~106,384 sigs for 2026). Constitutional amendment: 8% in any 6 of 8 districts (minimum ~170,215 sigs for 2026). Petitioners can target the 6 districts with the lowest vote totals." },
+    ]
+  },
+  {
+    id: "submission", label: "4. Submission & Verification",
+    color: "#5f370e", accent: "#f6e05e",
+    steps: [
+      { title: "Submit All Signatures at Once", detail: "Deadline: 5:00 PM on May 3, 2026 (6 months before the election). ALL pages must be submitted simultaneously, organized sequentially by county in labeled file folders and boxes. A receipt form showing pages per county is required." },
+      { title: "SOS Inventories & Distributes Pages", detail: "The SOS verifies the page count and issues a receipt. Pages are then distributed to local election authorities (county clerks / boards of election commissioners) for signature verification." },
+      { title: "Local Authorities Verify Signatures", detail: "Election authorities check signatures against voter registration records. The SOS may use random sampling (5% sample) or full verification. Under random sampling: <90% valid = district fails; >110% valid = district qualifies; 90–110% = full verification required." },
+      { title: "Verification Deadline", detail: "Full verification must be certified and delivered to the SOS by 5:00 PM on the last Tuesday in July. For 2026: July 28, 2026." },
+    ]
+  },
+  {
+    id: "sufficiency", label: "✓ CERTIFICATE OF SUFFICIENCY",
+    color: "#1a365d", accent: "#63b3ed", milestone: true,
+    steps: [
+      { title: "SOS Issues Certificate", detail: "After tallying verified signatures, the SOS issues either: (a) a Certificate of Sufficiency — stating the petition has enough valid signatures and shall be placed on the ballot — or (b) a Certificate of Insufficiency, stating the reasons. Must be issued by 5:00 PM on the 13th Tuesday before the general election (August 4, 2026)." },
+      { title: "What This Means: Officially On the Ballot", detail: "This is the moment a measure is officially 'on the ballot.' Citizens have 10 days to challenge the sufficiency determination in Cole County Circuit Court." },
+      { title: "Legislative Research Committee Hearing", detail: "Within 30 days of the Certificate of Sufficiency, the Joint Committee on Legislative Research must hold a public hearing in Jefferson City. A summary is posted on the SOS website." },
+    ]
+  },
+  {
+    id: "ballot", label: "5. Ballot & Election",
+    color: "#276749", accent: "#9ae6b4",
+    steps: [
+      { title: "Measure Numbered or Lettered", detail: "Constitutional amendments are numbered sequentially (Amendment No. 1, etc.) in order received. Statutory measures are lettered alphabetically (Proposition A, B, etc.)." },
+      { title: "Publication of Measures", detail: "The SOS publishes the full text of each measure in newspapers statewide — once/week for 2 consecutive weeks, with the last publication 15–30 days before the election. Copies are also posted at polling places." },
+      { title: "Election Day", detail: "Statewide ballot measures are voted on at the general election (first Tuesday after the first Monday in November in even-numbered years). A simple majority (50%+1) of votes cast on that measure is required to pass." },
+      { title: "If Approved", detail: "A statutory measure takes effect when approved by majority vote. A constitutional amendment takes effect 30 days after the election. If two conflicting measures both pass, the one with the most total affirmative votes prevails." },
+    ]
+  },
+];
+
+let activePhase = null;
+let activeStep = null;
+
+function buildFlow() {
+  const container = document.getElementById('flow-container');
+  container.innerHTML = '';
+  PHASES.forEach((phase, i) => {
+    const isActive = activePhase === phase.id;
+    const isMilestone = phase.milestone;
+
+    const row = document.createElement('div');
+    row.className = 'phase-row';
+
+    // Spine
+    const spine = document.createElement('div');
+    spine.className = 'spine';
+    const topLine = document.createElement('div');
+    topLine.className = 'spine-line' + (i === 0 ? ' hidden' : '');
+    const dot = document.createElement('div');
+    dot.className = 'spine-dot' + (isMilestone ? ' milestone' : '') + (isActive ? ' active-dot' : '');
+    if (isActive) { dot.style.background = phase.accent; dot.style.borderColor = phase.accent; }
+    const botLine = document.createElement('div');
+    botLine.className = 'spine-line' + (i === PHASES.length - 1 ? ' hidden' : '');
+    spine.appendChild(topLine); spine.appendChild(dot); spine.appendChild(botLine);
+
+    // Card
+    const card = document.createElement('div');
+    card.className = 'phase-card' + (isMilestone ? ' milestone-card' : '') + (isActive ? ' active-card' : '');
+    if (isActive) { card.style.background = phase.color; card.style.borderColor = phase.color; }
+
+    const hdr = document.createElement('div');
+    hdr.className = 'phase-header';
+    const lbl = document.createElement('span');
+    lbl.className = 'phase-label' + (isMilestone ? ' milestone-label' : '');
+    lbl.textContent = phase.label;
+    const tog = document.createElement('span');
+    tog.className = 'phase-toggle';
+    tog.textContent = isActive ? '▲ collapse' : `▼ ${phase.steps.length} step${phase.steps.length > 1 ? 's' : ''}`;
+    hdr.appendChild(lbl); hdr.appendChild(tog);
+    card.appendChild(hdr);
+
+    if (isActive) {
+      const stepsList = document.createElement('div');
+      stepsList.className = 'steps-list';
+      phase.steps.forEach((step, si) => {
+        const key = `${phase.id}-${si}`;
+        const isStepOpen = activeStep === key;
+        const stepEl = document.createElement('div');
+        stepEl.className = 'step-item';
+        const stepHdr = document.createElement('div');
+        stepHdr.className = 'step-header';
+        const stepTitle = document.createElement('span');
+        stepTitle.textContent = step.title;
+        const stepTog = document.createElement('span');
+        stepTog.className = 'step-toggle';
+        stepTog.textContent = isStepOpen ? '−' : '+';
+        stepHdr.appendChild(stepTitle); stepHdr.appendChild(stepTog);
+        const stepDetail = document.createElement('div');
+        stepDetail.className = 'step-detail' + (isStepOpen ? ' open' : '');
+        stepDetail.textContent = step.detail;
+        stepEl.appendChild(stepHdr); stepEl.appendChild(stepDetail);
+        stepEl.addEventListener('click', (e) => {
+          e.stopPropagation();
+          activeStep = isStepOpen ? null : key;
+          buildFlow();
+        });
+        stepsList.appendChild(stepEl);
+      });
+      card.appendChild(stepsList);
+    }
+
+    card.addEventListener('click', () => {
+      activePhase = isActive ? null : phase.id;
+      activeStep = null;
+      buildFlow();
+    });
+
+    row.appendChild(spine);
+    row.appendChild(card);
+    container.appendChild(row);
+  });
 }
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+buildFlow();
+</script>
+</body>
+</html>
